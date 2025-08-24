@@ -1,0 +1,61 @@
+---
+title: "Untitled"
+author: "Cindy"
+date: "2025-02-26"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+```{r}
+# 加载必要的库
+library(dplyr)
+library(broom)
+data <- read.csv("C://Users//Intern1//Desktop//分组.csv", 
+                 stringsAsFactors = TRUE, )
+head(data)
+#转换为因子类型
+data$heparinuse <- as.factor(data$heparinuse)
+# 定义线性模型公式
+formula <- 出生体重g ~ 络安命 + 与分娩孕周相比是否诊断FGR + 分娩时是否为重度FGR + 治疗结果
+unique(data$heparinuse)
+```
+```{r}
+# 对是否使用肝素进行分组并查看
+data %>%
+  group_by(heparinuse) %>%
+  summarise(n = n()) # 查看每组的样本数
+#查看分组后出生体重数据  
+data %>%
+  group_by(heparinuse) %>%summarise(
+    mean_出生体重g = mean(出生体重g, na.rm = TRUE),
+    sd_出生体重g = sd(出生体重g, na.rm = TRUE)
+  ) 
+# 按照肝素使用情况分组，并对每个组拟合模型
+lm_models <- data %>%
+   group_by(heparinuse) %>%
+   do(model = lm(formula, data = .))
+# 查看每个模型的统计数据
+lapply(lm_models$model, tidy)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
