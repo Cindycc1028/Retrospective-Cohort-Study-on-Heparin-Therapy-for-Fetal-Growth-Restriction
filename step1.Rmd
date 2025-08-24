@@ -1,6 +1,6 @@
 ---
 title: "step1"
-author: "崔心仪"
+author: "Cindy"
 date: "2025-02-28"
 output: word_document
 ---
@@ -122,3 +122,4 @@ ggplot(coeff_data, aes(x = Estimate, y = Coefficients)) +
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
