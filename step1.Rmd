@@ -1,0 +1,124 @@
+---
+title: "step1"
+author: "崔心仪"
+date: "2025-02-28"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+```{r}
+data <- read.csv("C:/Users/cuixi/Desktop/first.csv", head = TRUE)
+head(data)
+```
+```{r}
+library(car)
+#检查自变量中的共线性
+# 假设你的数据框名为data，并且你已经拟合了一个名为model的广义线性模型
+# 例如，以下是如何拟合一个二项式分布的广义线性模型
+model <- glm(孕期肝素使用 ~ ., data = data, family = binomial)
+
+# 计算VIF值
+vif_values <- vif(model)
+
+# 打印VIF值
+print(vif_values)
+
+# 查看VIF值大于10的变量
+high_vif <- which(vif_values > 10)
+print(high_vif)
+```
+```{r}
+# 检查缺失值
+sum(is.na(data))
+
+# 如果有缺失值，您可以选择删除或填充它们
+# data <- na.omit(data)  # 删除包含缺失值的行
+# 或者使用其他方法填充缺失值
+
+# 将“孕期肝素使用”转换为因子
+data$孕期肝素使用 <- as.factor(data$孕期肝素使用)
+
+# 运行逻辑回归模型
+# 因变量除了“孕期肝素使用”外，都作为解释变量
+model <- glm(孕期肝素使用 ~ ., data = data, family = binomial)
+
+# 输出模型摘要
+summary(model)
+```
+```{r}
+# 加载数据
+data <- read.csv("C:/Users/cuixi/Desktop/first.csv", head = TRUE)
+
+# 特征选择（这里使用逐步回归进行变量选择）
+library(MASS)
+step_model <- stepAIC(glm(孕期肝素使用 ~ ., data = data, family = binomial), 
+                      direction = "both")
+
+# 输出选择的模型
+summary(step_model)
+```
+```{r}
+# 安装和加载必要的包
+library(ggplot2)
+library(dplyr)
+
+# 创建数据框
+coeff_data <- data.frame(
+  Coefficients = c("Intercept", "人工受精", "高血压疾病", "甲状腺疾病", "前置胎盘",
+                   "易栓症", "抗心磷脂抗体综合征", "既往小于10周难免流产的次数1",
+                   "既往小于10周难免流产的次数2", "孕期体重增加是否符合相应BMI值",
+                   "首次孕周", "重度FGR"),
+  Estimate = c(-1.4508, 0.9968, -0.8227, 0.3792, -0.8698,
+               3.4037, 1.4530, -0.5623, 1.2753, 0.3491,
+               -0.6088, 0.2890),
+  Std_Error = c(0.6788, 0.3900, 0.1336, 0.2569, 0.5495,
+                0.8086, 0.7439, 0.3613, 0.5990, 0.1927,
+                0.1937, 0.1970),
+  z_value = c(-2.137, 2.556, -6.159, 1.476, -1.583,
+              4.209, 1.953, -1.556, 2.129, 1.812,
+              -3.143, 1.467),
+  Pr_z = c(0.03258, 0.01059, 7.34e-10, 0.13986, 0.11342,
+           2.56e-05, 0.05078, 0.11969, 0.03324, 0.07000,
+           0.00167, 0.14238)
+)
+
+# 添加置信区间
+coeff_data$Lower_CI <- coeff_data$Estimate - 1.96 * coeff_data$Std_Error
+coeff_data$Upper_CI <- coeff_data$Estimate + 1.96 * coeff_data$Std_Error
+
+# 创建可视化
+ggplot(coeff_data, aes(x = Estimate, y = Coefficients)) +
+  geom_point(color = "steelblue", size = 3) +
+  geom_errorbarh(aes(xmin = Lower_CI, xmax = Upper_CI), height = 0.1) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red") +
+  theme_minimal() +
+  labs(title = "回归系数可视化",
+       x = "估计值 Estimate",
+       y = "变量 Coefficients") +
+  geom_text(aes(label = ifelse(Pr_z < 0.05, "*", "")),
+            hjust = -0.5) +
+  theme(axis.text.y = element_text(size = 10)) +
+  scale_x_continuous(breaks = seq(-5, 5, 1))
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
