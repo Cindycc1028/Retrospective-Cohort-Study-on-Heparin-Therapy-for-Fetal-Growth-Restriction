@@ -1,0 +1,106 @@
+---
+title: "Untitled"
+author: "Cindy"
+date: "2025-02-26"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+```{r}
+# 加载必要的包
+library(readr)
+library(dplyr)
+library(broom)
+options(repos = c(CRAN = "https://mirrors.tuna.tsinghua.edu.cn/CRAN/"))
+# 读取CSV文件（注意编码问题，尝试UTF-8或GBK）
+data <- read.csv("C:/Users/cuixi/Desktop/特征分析.csv", head = TRUE)
+# 检查列名和数据格式
+colnames(data)  # 确认列名是否包含heparinuse和fgroutcome
+```
+```{r}
+data$高龄产妇 <- as.factor(data$高龄产妇)
+data$人工受精 <- as.factor(data$人工受精)
+data$孕次分层 <- as.factor(data$孕次分层)
+data$生育过 <- as.factor(data$生育过)
+data$流产史 <- as.factor(data$流产史)
+data$胎儿生长受限史 <- as.factor(data$胎儿生长受限史)
+data$高血压疾病 <- as.factor(data$高血压疾病)
+data$妊娠期肝内胆汁淤积症 <- as.factor(data$妊娠期肝内胆汁淤积症)
+data$糖尿病 <- as.factor(data$糖尿病)
+data$甲状腺疾病 <- as.factor(data$甲状腺疾病)
+data$前置胎盘 <- as.factor(data$前置胎盘)
+data$易栓症 <- as.factor(data$易栓症)
+data$抗心磷脂抗体综合征 <- as.factor(data$抗心磷脂抗体综合征)
+data$既往有无大于10周流产或死胎  <- as.factor(data$既往有无大于10周流产或死胎 )
+data$孕期体重增加是否符合相应BMI值 <- as.factor(data$孕期体重增加是否符合相应BMI值)
+data$首次孕周 <- as.factor(data$首次孕周)
+data$重度FGR <- as.factor(data$重度FGR)
+data$heparinuse <- as.factor(data$heparinuse)
+summary(data)
+```
+```{r}
+library(car)
+
+# 假设你的数据框名为data，并且你已经拟合了一个名为model的广义线性模型
+# 例如，以下是如何拟合一个二项式分布的广义线性模型
+model <- glm(与分娩孕周相比是否诊断FGR ~ ., data = data, family = binomial)
+
+# 计算VIF值
+vif_values <- vif(model)
+
+# 打印VIF值
+print(vif_values)
+
+# 查看VIF值大于10的变量
+high_vif <- which(vif_values > 10)
+print(high_vif)
+```
+```{r}
+#去除自变量间的共线性后，即剔除本次妊娠孕前体重Kg、分娩前体重Kg、孕期体重增加Kg三个因素后重新建模拟合   
+data <- read.csv("C:/Users/cuixi/Desktop/VIF.csv", head = TRUE)
+varsMul<-c("高龄产妇","人工受精","孕","产","孕次分层","生育过","流产史","胎儿生长受限史","高血压疾病","妊娠期肝内胆汁淤积症", "糖尿病","甲状腺疾病","前置胎盘","易栓症","抗心磷脂抗体综合征","既往小于10周难免流产的次数1","既往小于10周难免流产的次数2","既往有无大于10周流产或死胎","身高","孕前体重指数","孕期体重增加是否符合相应BMI值","首次孕周","重度FGR","heparinuse")#需要进行多因素分析的变量
+dataAM<-data.frame(subset(data,select=c("与分娩孕周相比是否诊断FGR",varsMul[1:length(varsMul)])))#将因变量和要分析的自变量单独建库
+fitMul<-glm(与分娩孕周相比是否诊断FGR~.,data=dataAM,family=binomial())#行多因素logistic回归分析
+fitSum<-summary(fitMul)
+summary(fitMul)
+```
+
+```{r}
+# 提取系数和计算优势比
+OR <- exp(fitSum$coef[, 'Estimate'])
+SE <- fitSum$coef[, 'Std. Error']
+CI_lower <- exp(fitSum$coef[, 'Estimate'] - 1.96 * SE)
+CI_upper <- exp(fitSum$coef[, 'Estimate'] + 1.96 * SE)
+
+# 结果表格
+ResultMul <- cbind(
+  Coefficient = fitSum$coef,
+  OR = OR,
+  CI_lower = CI_lower,
+  CI_upper = CI_upper
+)
+print(ResultMul)
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
